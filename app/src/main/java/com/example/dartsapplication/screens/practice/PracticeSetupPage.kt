@@ -46,7 +46,7 @@ fun PracticeSetupPage(
     ) {
         val name by practiceViewModel.playerName.collectAsStateWithLifecycle()
         val startingScore by practiceViewModel.startingScore.collectAsStateWithLifecycle()
-        var state = practiceViewModel.practiceState
+
 
         val onNameEntered: (value: String) -> Unit = remember {
             return@remember practiceViewModel::setPlayerName
@@ -71,7 +71,7 @@ fun PracticeSetupPage(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(), maxLines = 1
         )
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = startingScore, onValueChange = {
                 onStartingScoreEntered(it)
@@ -83,36 +83,24 @@ fun PracticeSetupPage(
             keyboardActions = KeyboardActions(),
             maxLines = 1
         )
-        Spacer(modifier = Modifier.height(15.dp))
-
-        Spacer(modifier = Modifier.height(10.dp))
-
+        Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = {
-
             onSubmit(
                 PracticeEntity(
                     name = name,
                     startingScore = startingScore,
+                    remainingScore = startingScore
                 )
-
             )
-
-        },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = ColorDarkGrey,
-                contentColor = Color.White
-            )) {
-            Text(text = "Submit")
-        }
-        Button(onClick = {
             navigateToPracticeScreen()
         },
             colors = ButtonDefaults.buttonColors(
                 containerColor = ColorDarkGrey,
                 contentColor = Color.White
             )) {
-            Text(text = "Begin Game")
+            Text(text = "Create Game")
         }
+
         Button(onClick = { navigateToStatsScreen() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = ColorDarkGrey,

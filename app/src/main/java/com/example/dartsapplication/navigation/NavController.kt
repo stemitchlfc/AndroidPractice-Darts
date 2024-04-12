@@ -12,9 +12,10 @@ import com.example.dartsapplication.navigation.Destinations.PRACTICE_STATISTICS_
 
 object Destinations {
     const val HOME_SCREEN = "home"
-    const val PRACTICE_SCREEN = "practice"
+    const val PRACTICE_SCREEN = "practice_page"
     const val PRACTICE_SETUP_SCREEN = "practice_setup"
     const val PRACTICE_STATISTICS_SCREEN = "practice_statistics"
+    const val PRACTICE_ROUTE = "practice"
 }
 
 @Composable

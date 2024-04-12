@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,19 +27,14 @@ class PracticeViewModel @Inject constructor(
     private val _practiceList = MutableStateFlow(emptyList<PracticeEntity>())
     val practiceList = _practiceList.asStateFlow()
 
-    private val _practice = MutableStateFlow(PracticeEntity())
-    val practice = _practice.asStateFlow()
+    private val _practiceGame = MutableStateFlow(PracticeEntity())
+    val practiceGame = _practiceGame.asStateFlow()
 
-    suspend fun getPractice(gameId: Int){
-        viewModelScope.launch((Dispatchers.IO))
-        {
-            try {
-                val practice: PracticeEntity = repository.getPractice(gameId)
-                withContext(Dispatchers.Main){
-                    _practice.value = practice
-                }
-            } catch (e: Exception){
-                println("Exception getting")
+
+    fun getPractice() {
+        viewModelScope.launch {
+            repository.getAllPractices().collectLatest {
+                _practiceGame.tryEmit(it.last())
             }
         }
     }
@@ -52,7 +48,11 @@ class PracticeViewModel @Inject constructor(
         }
     }
 
-
+    fun deletePractice(practiceEntity: PracticeEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.delete(practiceEntity)
+        }
+    }
 
     fun updatePractice(practiceEntity: PracticeEntity) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -74,24 +74,12 @@ class PracticeViewModel @Inject constructor(
     }
 
 
-
     private val _startingScore = MutableStateFlow("")
     val startingScore = _startingScore.asStateFlow()
     fun setStartingScore(startingScore: String) {
         _startingScore.tryEmit(startingScore)
     }
 
-    private val _currentScore = MutableStateFlow("")
-    val currentScore = _currentScore.asStateFlow()
-    fun setCurrentScore(currentScore: String) {
-        _currentScore.tryEmit(currentScore)
-    }
-
-    private val _average = MutableStateFlow("")
-    val average = _average.asStateFlow()
-    fun setAverage(average: String) {
-        _average.tryEmit(average)
-    }
 
     var practiceState by mutableStateOf(PracticeState())
         private set
@@ -101,7 +89,36 @@ class PracticeViewModel @Inject constructor(
             is DartsAction.Number -> enterNumber(action.number)
             is DartsAction.Submit -> submitScore()
             is DartsAction.Delete -> performDelete()
+            is DartsAction.Double -> calculateDoubles(action.double)
         }
+    }
+
+    private fun calculateDoubles(double: Int) {
+        val toRemove: Int = 3 - double
+        practiceState = practiceState.copy(
+            dartsAtDouble = practiceState.dartsAtDouble + double,
+            dartsThrown = practiceState.dartsThrown - toRemove,
+            average = calculateAverage(toRemove)
+        )
+        val practiceEntity = generateEntity()
+
+        updatePractice(practiceEntity)
+        finishGame()
+    }
+
+    private fun generateEntity(): PracticeEntity {
+        return PracticeEntity(
+            id = practiceGame.value.id,
+            name = practiceGame.value.name,
+            startingScore = practiceGame.value.startingScore,
+            previousScore = practiceState.previousScore,
+            remainingScore = practiceState.remainingScore,
+            average = practiceState.average,
+            dartsThrown = practiceState.dartsThrown,
+            isOnDouble = practiceState.isOnDouble,
+            legComplete = practiceState.legComplete,
+            dartsAtDouble = practiceState.dartsAtDouble
+        )
     }
 
     private fun performDelete() {
@@ -113,33 +130,73 @@ class PracticeViewModel @Inject constructor(
         return
     }
 
+    private fun calculateAverage(toRemove: Int):String{
+        val totalScored = practiceGame.value.startingScore.toDouble()
+        val currentDartsThrown = practiceState.dartsThrown - toRemove
+        val notRoundedAverage: Double = totalScored / currentDartsThrown * 3
+        val average = roundOffDecimal(notRoundedAverage)
+        return average.toString()
+    }
+
     private fun submitScore() {
-        if(practiceState.remainingScore.equals("")){
-            practiceState.remainingScore = practiceState.startingScore
+        if (practiceState.dartsThrown == 0) {
+            practiceState = practiceState.copy(
+                remainingScore = practiceGame.value.startingScore
+            )
+            //practiceState.remainingScore = practiceState.startingScore
         }
         val currentScore = practiceState.remainingScore.toDouble()
         val enteredScore = practiceState.enteredScore.toDouble()
 
 
-        if (onDouble()) {
-            practiceState = practiceState.copy(
-                isOnDouble = true
-            )
-        }
-        if (scoreValid(currentScore, enteredScore)){
+        if (scoreValid(currentScore, enteredScore)) {
             val newScore: Double = currentScore - enteredScore
-            val totalScored = 501 - newScore
+            val totalScored = practiceGame.value.startingScore.toDouble() - newScore
             val currentDartsThrown = practiceState.dartsThrown + 3
-            var currentAverage: Double = totalScored/currentDartsThrown * 3
+            val currentAverage: Double = totalScored / currentDartsThrown * 3
+
             practiceState = practiceState.copy(
                 previousScore = practiceState.enteredScore,
                 remainingScore = newScore.toInt().toString(),
                 dartsThrown = practiceState.dartsThrown + 3,
                 average = currentAverage.toString(),
-                enteredScore = ""
+                enteredScore = "",
+                //legComplete = legComplete
             )
+            if (onDouble()) {
+                practiceState = practiceState.copy(
+                    isOnDouble = true
+                )
+            }
+            if (legComplete()) {
+                //finishGame()
+                practiceState = practiceState.copy(
+                    isOnDouble = false,
+                    legComplete = true
+                )
+            }
+            val practiceEntity = PracticeEntity(
+                id = practiceGame.value.id,
+                name = practiceGame.value.name,
+                startingScore = practiceGame.value.startingScore,
+                previousScore = practiceState.previousScore,
+                remainingScore = practiceState.remainingScore,
+                average = practiceState.average,
+                dartsThrown = practiceState.dartsThrown,
+                isOnDouble = practiceState.isOnDouble,
+                legComplete = practiceState.legComplete
+            )
+            updatePractice(practiceEntity)
         }
+    }
 
+    private fun finishGame() {
+
+    }
+
+    private fun legComplete(): Boolean {
+        val remainingScore = practiceState.remainingScore.toDouble()
+        return remainingScore == 0.0
     }
 
     private fun scoreValid(currentScore: Double, enteredScore: Double): Boolean {
@@ -148,9 +205,7 @@ class PracticeViewModel @Inject constructor(
 
     private fun onDouble(): Boolean {
         val remainingScore = practiceState.remainingScore.toDouble()
-        return (remainingScore <= 170 && !remainingScore.equals(169) || !remainingScore.equals(168)
-                || !remainingScore.equals(166) || !remainingScore.equals(165) || !remainingScore.equals(163)
-                || !remainingScore.equals(162) || !remainingScore.equals(159))
+        return (remainingScore <= 170)
     }
 
     private fun enterNumber(number: Int) {
@@ -163,16 +218,15 @@ class PracticeViewModel @Inject constructor(
 
         }
         practiceState = practiceState.copy(
-            enteredScore = practiceState.enteredScore + number
+            enteredScore = practiceState.enteredScore + number,
+            remainingScore = practiceState.remainingScore
         )
     }
-//
-//
-//
-//    private val _isChecked = MutableStateFlow(false)
-//    val isChecked = _isChecked.asStateFlow()
-//    fun setChecked(bool: Boolean) {
-//        _isChecked.tryEmit(bool)
-//    }
 
+
+    fun roundOffDecimal(number: Double): Double? {
+        val df = DecimalFormat("#.##")
+        df.roundingMode = RoundingMode.CEILING
+        return df.format(number).toDouble()
+    }
 }

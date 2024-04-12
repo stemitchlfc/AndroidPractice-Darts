@@ -19,8 +19,8 @@ data class PracticeEntity(
     @SerialName("startingScore")
     val startingScore: String = "",
 
-    @SerialName("currentScore")
-    val currentScore: String = "",
+    @SerialName("remainingScore")
+    val remainingScore: String = "",
 
     @SerialName("previousScore")
     val previousScore: String = "",
@@ -39,6 +39,9 @@ data class PracticeEntity(
 
     @SerialName("checkoutRate")
     val checkoutRate: Double? = 0.0,
+
+    @SerialName("legComplete")
+    val legComplete: Boolean = false
 )
 
 

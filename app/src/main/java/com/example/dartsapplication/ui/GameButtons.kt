@@ -21,7 +21,6 @@ import com.example.dartsapplication.ui.theme.DartsApplicationTheme
 
 @Composable
 fun GameButtons(
-    modifier: Modifier = Modifier,
     buttonSpacing: Dp = 8.dp,
     onAction: (DartsAction) -> Unit
 ){
@@ -145,6 +144,6 @@ fun GameButtons(
 @Composable
 fun DisplayGameButtons(){
     DartsApplicationTheme {
-        GameButtons(modifier = Modifier, onAction = {})
+        GameButtons(onAction = {})
     }
 }

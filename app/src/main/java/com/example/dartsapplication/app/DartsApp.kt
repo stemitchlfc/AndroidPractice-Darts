@@ -6,7 +6,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.dartsapplication.navigation.Destinations.HOME_SCREEN
+import com.example.dartsapplication.navigation.Destinations.PRACTICE_ROUTE
+import com.example.dartsapplication.navigation.Destinations.PRACTICE_SCREEN
 import com.example.dartsapplication.navigation.Destinations.PRACTICE_SETUP_SCREEN
+import com.example.dartsapplication.navigation.Destinations.PRACTICE_STATISTICS_SCREEN
 import com.example.dartsapplication.screens.home.HomePage
 import com.example.dartsapplication.screens.practice.PracticePage
 import com.example.dartsapplication.screens.practice.PracticeSetupPage
@@ -34,68 +37,39 @@ fun DartsApp() {
             }
             navigation(
                 startDestination = PRACTICE_SETUP_SCREEN,
-                route = "practice"
+                route = PRACTICE_ROUTE
             ){
                 composable(PRACTICE_SETUP_SCREEN){ entry ->
                     val practiceViewModel = entry.sharedPracticeViewModel<PracticeViewModel>(appNavController)
+
                     PracticeSetupPage(
                         practiceViewModel,
                         navigateToStatsScreen = {
-                            appNavController.navigate("stats")
+                            appNavController.navigate(PRACTICE_STATISTICS_SCREEN)
                         },
                         navigateToPracticeScreen = {
-                            appNavController.navigate("practice_game")
+                            appNavController.navigate(PRACTICE_SCREEN)
                         }
                     ) 
                 }
-                composable("stats"){ entry ->
+                composable(PRACTICE_STATISTICS_SCREEN){ entry ->
                     val practiceViewModel = entry.sharedPracticeViewModel<PracticeViewModel>(appNavController)
                     PracticeStatistics(
                         practiceViewModel = practiceViewModel
                     )
                 }
-                composable("practice_game"){ entry ->
+                composable(PRACTICE_SCREEN){ entry ->
                     val practiceViewModel = entry.sharedPracticeViewModel<PracticeViewModel>(appNavController)
+
                     PracticePage(
-                        practiceViewModel = practiceViewModel
+                        practiceViewModel = practiceViewModel,
+                        navigateToStatsScreen = {
+                            appNavController.navigate(PRACTICE_STATISTICS_SCREEN)
+                        }
                     )
                 }
             }
-            //dartsNavGraph(appNavController)
+
         }
     }
 }
-
-//private fun NavGraphBuilder.dartsNavGraph(
-//    navController: AppNavController
-//){
-//    composable(
-//        route = HOME_SCREEN
-//    ) {
-//        HomePage(
-//            navController,
-//            navigateToPracticeScreen = {navController.navigateToPracticePage()},
-//            navigateToPracticeSetupScreen = {navController.navigateToPracticeSetupPage()}
-//        )
-//    }
-//    composable(
-//        route = PRACTICE_SCREEN
-//    ) {
-//        PracticePage()
-//    }
-//    composable(
-//        route = PRACTICE_SETUP_SCREEN
-//    ) {
-//        PracticeSetupPage(
-//            navController,
-//            navigateToPracticeScreen = {navController.navigateToPracticePage()}
-//        ) { navController.navigateToPracticeStatsPage() }
-//    }
-//    composable(
-//        route = PRACTICE_STATISTICS_SCREEN
-//    ) {
-//        PracticeStatistics(
-//
-//        )
-//    }
-//}

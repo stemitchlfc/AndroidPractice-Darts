@@ -80,7 +80,7 @@ fun HomePage(
                         contentColor = Color.White
                     )
                 ) {
-                    Text(text = "Practice")
+                    Text(text = "Bobs 27")
                 }
 
             }
@@ -92,18 +92,10 @@ fun HomePage(
                         contentColor = Color.White
                     )
                 ) {
-                    Text(text = "Practice")
+                    Text(text = "Match")
                 }
 
             }
         }
     }
 }
-//@Preview
-//@Composable
-//fun DisplayHomePage(){
-//    val appNavController = rememberAppNavController()
-//    HomePage(appNavController,
-//        navigateToPracticeScreen = {appNavController.navigateToPracticePage()},
-//        navigateToPracticeSetupScreen = {appNavController.navigateToPracticeSetupPage()})
-//}
