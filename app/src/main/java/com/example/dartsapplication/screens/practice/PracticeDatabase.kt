@@ -16,7 +16,7 @@ import javax.inject.Singleton
     version = 1
 )
 abstract class PracticeDatabase : RoomDatabase(){
-    abstract val dao: PracticeDao
+    abstract val practiceDao: PracticeDao
 }
 
 @InstallIn(SingletonComponent::class)
@@ -41,6 +41,6 @@ object AppModule {
     @Provides
     @Singleton
     fun provideMyRepository(mydb:PracticeDatabase) :PracticeRepository {
-        return RepositoryImpl(mydb.dao)
+        return RepositoryImpl(mydb.practiceDao)
     }
 }

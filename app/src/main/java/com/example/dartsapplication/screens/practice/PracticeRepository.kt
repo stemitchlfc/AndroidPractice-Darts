@@ -16,7 +16,7 @@ interface PracticeRepository {
 
     suspend fun getAllPractices(): Flow<List<PracticeEntity>>
 
-    suspend fun getPractice(gameId: Int): PracticeEntity
+
 }
 
 class RepositoryImpl @Inject constructor(
@@ -46,8 +46,5 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getPractice(gameId: Int): PracticeEntity {
-        return dao.getPractice(1)
-    }
 
 }

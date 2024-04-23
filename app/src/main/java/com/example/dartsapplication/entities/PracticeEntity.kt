@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 data class PracticeEntity(
     @PrimaryKey(autoGenerate = true)
     @SerialName("id")
-    val id: Int = 0,
+    val id: Int? = null,
 
     @SerialName("playerName")
     val name: String? = "",

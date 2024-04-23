@@ -25,6 +25,5 @@ interface PracticeDao {
     @Query("SELECT * FROM PracticeEntity")
     fun getAllPractices(): Flow<List<PracticeEntity>>
 
-    @Query("SELECT * FROM PracticeEntity WHERE id=:gameId")
-    fun getPractice(gameId: Int): PracticeEntity
+
 }
