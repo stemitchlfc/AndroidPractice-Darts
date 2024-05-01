@@ -83,9 +83,49 @@ class PracticeViewModel @Inject constructor(
     fun onAction(action: DartsAction) {
         when (action) {
             is DartsAction.Number -> enterNumber(action.number)
-            is DartsAction.Submit -> submitScore()
             is DartsAction.Delete -> performDelete()
+            is DartsAction.Submit -> submitScore()
             is DartsAction.Double -> calculateDoubles(action.double)
+        }
+    }
+
+    fun enterNumber(number: Int) {
+        if (practiceState.enteredScore.length >= 3) {
+            practiceState = practiceState.copy(
+                enteredScore = ""
+            )
+        }
+        practiceState = practiceState.copy(
+            enteredScore = practiceState.enteredScore + number,
+            remainingScore = practiceState.remainingScore
+        )
+    }
+
+    fun performDelete() {
+        practiceState = practiceState.copy(
+            enteredScore = practiceState.enteredScore.dropLast(1)
+        )
+    }
+
+    fun submitScore() {
+        setRemainingScore()
+        val currentScore = practiceState.remainingScore.toInt()
+        val enteredScore = practiceState.enteredScore.toInt()
+        if (isScoreValid(currentScore, enteredScore)) {
+            playScore(currentScore, enteredScore)
+            if (isOnDouble(practiceState.remainingScore.toInt())) {
+                practiceState = practiceState.copy(
+                    isOnDouble = true
+                )
+            }
+            if (legComplete(practiceState.remainingScore.toInt())) {
+                practiceState = practiceState.copy(
+                    isOnDouble = false,
+                    legComplete = true
+                )
+            }
+            val practiceEntity = generateEntity()
+            updatePractice(practiceEntity)
         }
     }
 
@@ -94,11 +134,33 @@ class PracticeViewModel @Inject constructor(
         practiceState = practiceState.copy(
             dartsAtDouble = practiceState.dartsAtDouble + double,
             dartsThrown = practiceState.dartsThrown - toRemove,
-            average = calculateAverage(toRemove)
+            average = calculateAverage(practiceState, toRemove)
         )
         val practiceEntity = generateEntity()
 
         updatePractice(practiceEntity)
+    }
+
+    private fun playScore(currentScore: Int, enteredScore: Int) {
+        val remainingScore: Int = currentScore - enteredScore
+        val totalScored = practiceGame.value.startingScore.toDouble() - remainingScore
+        val currentDartsThrown = practiceState.dartsThrown + 3
+        val currentAverage: Double = totalScored / currentDartsThrown * 3
+        practiceState = practiceState.copy(
+            previousScore = practiceState.enteredScore,
+            remainingScore = remainingScore.toString(),
+            dartsThrown = practiceState.dartsThrown + 3,
+            average = currentAverage.toString(),
+            enteredScore = "",
+        )
+    }
+
+    fun setRemainingScore() {
+        if (practiceState.dartsThrown == 0) {
+            practiceState = practiceState.copy(
+                remainingScore = practiceGame.value.startingScore
+            )
+        }
     }
 
     private fun generateEntity(): PracticeEntity {
@@ -116,105 +178,35 @@ class PracticeViewModel @Inject constructor(
         )
     }
 
-    private fun performDelete() {
-        if (practiceState.enteredScore.isNotBlank()) {
-            practiceState = practiceState.copy(
-                enteredScore = practiceState.enteredScore.dropLast(1)
-            )
+    companion object {
+        fun isScoreValid(currentScore: Int, enteredScore: Int): Boolean {
+            return !(enteredScore > 180 ||
+                    enteredScore > currentScore ||
+                    currentScore - enteredScore == 1)
         }
-        return
-    }
 
-    private fun calculateAverage(toRemove: Int):String{
-        val totalScored = practiceGame.value.startingScore.toDouble() - practiceState.remainingScore.toDouble()
-        val currentDartsThrown = practiceState.dartsThrown - toRemove
-        val notRoundedAverage: Double = totalScored / currentDartsThrown * 3
-        val average = roundOffDecimal(notRoundedAverage)
-        return average.toString()
-    }
-
-    private fun submitScore() {
-        setRemainingScore()
-        val currentScore = practiceState.remainingScore.toInt()
-        val enteredScore = practiceState.enteredScore.toInt()
-
-        if (scoreValid(currentScore, enteredScore)) {
-            updateState(currentScore, enteredScore)
-
-            if (onDouble(practiceState.remainingScore.toInt())) {
-                practiceState = practiceState.copy(
-                    isOnDouble = true
-                )
-            }
-            if (legComplete(practiceState.remainingScore.toInt())) {
-                practiceState = practiceState.copy(
-                    isOnDouble = false,
-                    legComplete = true
-                )
-            }
-            val practiceEntity = generateEntity()
-            updatePractice(practiceEntity)
+        fun isOnDouble(remainingScore: Int): Boolean {
+            return (remainingScore <= 170 && remainingScore != 169 && remainingScore != 168
+                    && remainingScore != 166 && remainingScore != 165 && remainingScore != 163
+                    && remainingScore != 162 && remainingScore != 159)
         }
-    }
 
-    private fun updateState(currentScore: Int, enteredScore: Int) {
-        val remainingScore: Int = currentScore - enteredScore
-        val totalScored = practiceGame.value.startingScore.toDouble() - remainingScore
-        val currentDartsThrown = practiceState.dartsThrown + 3
-        val currentAverage: Double = totalScored / currentDartsThrown * 3
-        practiceState = practiceState.copy(
-            previousScore = practiceState.enteredScore,
-            remainingScore = remainingScore.toString(),
-            dartsThrown = practiceState.dartsThrown + 3,
-            average = currentAverage.toString(),
-            enteredScore = "",
-        )
-    }
-
-    private fun setRemainingScore() {
-        if (practiceState.dartsThrown == 0) {
-            practiceState = practiceState.copy(
-                remainingScore = practiceGame.value.startingScore
-            )
+        fun roundOffDecimal(number: Double): Double {
+            val df = DecimalFormat("#.##")
+            df.roundingMode = RoundingMode.HALF_EVEN
+            return df.format(number).toDouble()
         }
-    }
 
-
-    private fun legComplete(remainingScore: Int): Boolean {
-        return remainingScore == 0
-    }
-
-    fun scoreValid(currentScore: Int, enteredScore: Int): Boolean {
-        return !(enteredScore > 180 ||
-                enteredScore > currentScore ||
-                currentScore - enteredScore == 1)
-    }
-
-    fun onDouble(remainingScore: Int): Boolean {
-        return (remainingScore <= 170 && remainingScore != 169 && remainingScore != 168
-                && remainingScore != 166 && remainingScore != 165 && remainingScore != 163
-                && remainingScore != 162 && remainingScore != 159)
-    }
-
-    private fun enterNumber(number: Int) {
-        if (practiceState.enteredScore.length >= 3) {
-            while (practiceState.enteredScore.isNotBlank()) {
-                practiceState = practiceState.copy(
-                    enteredScore = practiceState.enteredScore.dropLast(1)
-                )
-            }
-
+        fun legComplete(remainingScore: Int): Boolean {
+            return remainingScore == 0
         }
-        practiceState = practiceState.copy(
-            enteredScore = practiceState.enteredScore + number,
-            remainingScore = practiceState.remainingScore
-        )
-    }
 
-
-    private fun roundOffDecimal(number: Double): Double {
-        val df = DecimalFormat("#.##")
-        df.roundingMode = RoundingMode.CEILING
-        return df.format(number).toDouble()
+        fun calculateAverage(practiceState: PracticeState,toRemove: Int):String{
+            val totalScored = practiceState.startingScore.toDouble() - practiceState.remainingScore.toDouble()
+            val currentDartsThrown = practiceState.dartsThrown - toRemove
+            val notRoundedAverage: Double = totalScored / currentDartsThrown * 3
+            val average = roundOffDecimal(notRoundedAverage)
+            return average.toString()
+        }
     }
 }

@@ -13,7 +13,8 @@ import javax.inject.Singleton
 
 @Database(
     entities = [PracticeEntity::class],
-    version = 1
+    version = 1,
+    exportSchema = false
 )
 abstract class PracticeDatabase : RoomDatabase(){
     abstract val practiceDao: PracticeDao
