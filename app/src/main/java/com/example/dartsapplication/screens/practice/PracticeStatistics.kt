@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,7 +42,7 @@ fun PracticeStatistics(
         practiceViewModel.getPracticeGames()
     })
 
-    val contents by practiceViewModel.practiceList.collectAsStateWithLifecycle()
+    val practiceGames by practiceViewModel.practiceList.collectAsStateWithLifecycle()
 
 
     val modifier = Modifier
@@ -53,132 +54,107 @@ fun PracticeStatistics(
 
     LazyColumn(
         content = {
-
-            items(contents) {
+            items(practiceGames) {
                 val item = ImmutablePractice(it)
-                PracticeCard(
-                    wrapper = item,
-                    modifier = modifier,
-                    deleteGame = {
-                        practiceViewModel.deletePractice(it)
-                    }
-                )
+                PracticeCard(practice = item, modifier = modifier, deleteGame = {
+                    practiceViewModel.deletePractice(it)
+                })
             }
         }, modifier = Modifier
             .fillMaxSize()
             .background(ColorLighterGreen)
     )
-
-
 }
 
 @Composable
 fun PracticeCard(
-    wrapper: ImmutablePractice,
-    modifier: Modifier,
-    deleteGame: () -> Unit
+    practice: ImmutablePractice, modifier: Modifier, deleteGame: () -> Unit
 ) {
-
 
     Card(
         modifier = modifier
     ) {
         Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .background(ColorDarkGreen),
-            verticalAlignment = Alignment.CenterVertically
-        )
-        {
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                practice.practiceEntity.name?.let {
+                    Text(
+                        text = it,
+                        maxLines = 1,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Black
+                    )
+                }
+                Text(
+                    text = "Average: ${practice.practiceEntity.average}",
+                    maxLines = 1,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Black
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .background(ColorDarkGreen)
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(ColorDarkGreen),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.background(ColorDarkGreen)
                 ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .padding(8.dp)
-                    ) {
-                        wrapper.practiceEntity.name?.let {
-                            Text(
-                                text = it,
-                                maxLines = 1,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
-                            )
-                        }
-                            Text(
-                                text = "Average: ${wrapper.practiceEntity.average}",
-                                maxLines = 1,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
-                            )
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .background(ColorDarkGreen)
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .background(ColorDarkGreen)
+
+                    Text(
+                        text = "Darts Thrown: ${practice.practiceEntity.dartsThrown}",
+                        maxLines = 1,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Black
+                    )
+                    Button(
+                        onClick = {
+                            deleteGame()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ColorDarkGrey, contentColor = Color.White
+                        ),
+
                         ) {
-
-                            Text(
-                                text = "Darts Thrown: ${wrapper.practiceEntity.dartsThrown.toString()}",
-                                maxLines = 1,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
-                            )
-                            Button(
-                                onClick = {
-                                    deleteGame()
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = ColorDarkGrey,
-                                    contentColor = Color.White
-                                ),
-
-                                ) {
-                                Text(text = "Delete")
-                            }
-                        }
+                        Text(text = "Delete")
                     }
                 }
             }
-
         }
+    }
 
 }
+
 
 @Preview
 @Composable
 fun PreviewPracticeCard() {
     val practiceEntity = PracticeEntity(
-        id = 1,
-        name = "Ste Preview",
-        startingScore = "501",
-        average = "75",
-        dartsThrown = 20
+        id = 1, name = "Ste Preview", startingScore = "501", average = "75", dartsThrown = 20
     )
 
-    PracticeCard(wrapper = ImmutablePractice(practiceEntity), modifier = Modifier) {
+    PracticeCard(practice = ImmutablePractice(practiceEntity), modifier = Modifier) {
 
     }
 }
-
 
 
 @Immutable
