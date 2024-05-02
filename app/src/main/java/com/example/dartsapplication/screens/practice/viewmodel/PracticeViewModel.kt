@@ -158,7 +158,8 @@ class PracticeViewModel @Inject constructor(
     fun setRemainingScore() {
         if (practiceState.dartsThrown == 0) {
             practiceState = practiceState.copy(
-                remainingScore = practiceGame.value.startingScore
+                remainingScore = practiceGame.value.startingScore,
+                startingScore = practiceGame.value.startingScore
             )
         }
     }
