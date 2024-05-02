@@ -39,6 +39,8 @@ fun PracticePage(
     val pageState = practiceViewModel.practiceState
 
 
+
+
     Box(modifier = Modifier
         .background(Color.Black)
         .fillMaxSize()){

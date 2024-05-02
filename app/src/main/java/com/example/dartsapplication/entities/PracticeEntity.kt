@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 data class PracticeEntity(
     @PrimaryKey(autoGenerate = true)
     @SerialName("id")
-    val id: Int = 0,
+    val id: Int? = null,
 
     @SerialName("playerName")
     val name: String? = "",
@@ -38,7 +38,7 @@ data class PracticeEntity(
     val dartsAtDouble: Int = 0,
 
     @SerialName("checkoutRate")
-    val checkoutRate: Double? = 0.0,
+    val checkoutRate: Double = 0.0,
 
     @SerialName("legComplete")
     val legComplete: Boolean = false
