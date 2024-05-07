@@ -5,11 +5,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import com.example.dartsapplication.navigation.Destinations.BOBS_ROUTE
+import com.example.dartsapplication.navigation.Destinations.BOBS_SCREEN
 import com.example.dartsapplication.navigation.Destinations.HOME_SCREEN
 import com.example.dartsapplication.navigation.Destinations.PRACTICE_ROUTE
 import com.example.dartsapplication.navigation.Destinations.PRACTICE_SCREEN
 import com.example.dartsapplication.navigation.Destinations.PRACTICE_SETUP_SCREEN
 import com.example.dartsapplication.navigation.Destinations.PRACTICE_STATISTICS_SCREEN
+import com.example.dartsapplication.screens.bobsts.BobsTSPage
+import com.example.dartsapplication.screens.bobsts.viewmodel.BobsViewModel
+import com.example.dartsapplication.screens.bobsts.viewmodel.sharedBobsViewModel
 import com.example.dartsapplication.screens.home.HomePage
 import com.example.dartsapplication.screens.practice.PracticePage
 import com.example.dartsapplication.screens.practice.PracticeSetupPage
@@ -32,6 +37,9 @@ fun DartsApp() {
                 HomePage(
                     navigateToPracticeSetupScreen = {
                         appNavController.navigate(PRACTICE_SETUP_SCREEN)
+                    },
+                    navigateToBobsPage = {
+                        appNavController.navigate(BOBS_SCREEN)
                     }
                 )
             }
@@ -69,7 +77,17 @@ fun DartsApp() {
                     )
                 }
             }
-
+            navigation(
+                startDestination = BOBS_SCREEN,
+                route = BOBS_ROUTE
+            ){
+                composable(BOBS_SCREEN){entry ->
+                    val bobsViewModel = entry.sharedBobsViewModel<BobsViewModel>(appNavController)
+                    BobsTSPage(
+                        bobsViewModel
+                    )
+                }
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.dartsapplication.navigation.Destinations.BOBS_SCREEN
 import com.example.dartsapplication.navigation.Destinations.HOME_SCREEN
 import com.example.dartsapplication.navigation.Destinations.PRACTICE_SCREEN
 import com.example.dartsapplication.navigation.Destinations.PRACTICE_SETUP_SCREEN
@@ -16,6 +17,8 @@ object Destinations {
     const val PRACTICE_SETUP_SCREEN = "practice_setup"
     const val PRACTICE_STATISTICS_SCREEN = "practice_statistics"
     const val PRACTICE_ROUTE = "practice"
+    const val BOBS_SCREEN = "bobs_screen"
+    const val BOBS_ROUTE = "bobs"
 }
 
 @Composable
@@ -43,5 +46,9 @@ class AppNavController(
 
     fun navigateToPracticeStatsPage(){
         navController.navigate(PRACTICE_STATISTICS_SCREEN)
+    }
+
+    fun navigateToBobsPage(){
+        navController.navigate(BOBS_SCREEN)
     }
 }

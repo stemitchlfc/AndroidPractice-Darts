@@ -26,7 +26,8 @@ import com.example.dartsapplication.ui.theme.ColorLighterGreen
 
 @Composable
 fun HomePage(
-    navigateToPracticeSetupScreen: () -> Unit
+    navigateToPracticeSetupScreen: () -> Unit,
+    navigateToBobsPage: () -> Unit
 ) {
     val padding = 8.dp
     Column(
@@ -74,7 +75,7 @@ fun HomePage(
             }
             Row {
                 Button(
-                    onClick = { navigateToPracticeSetupScreen() },
+                    onClick = { navigateToBobsPage() },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = ColorDarkGrey,
                         contentColor = Color.White
